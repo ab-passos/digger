@@ -1,22 +1,72 @@
 from github import Github
 
+class FileData:
+    def __init__(self,
+                commit, 
+                author):
+        self.commit = commit
+        self.author = author
+    
+    def __str__(self):
+        return 'Commit {} from user: {}'\
+            .format(self.commit, self.author)
+
 class PRData:
-    def __init__(self, 
-                 user, 
-                 list_of_changed_files,
-                 list_of_contributors):
+    def __init__(self,
+                number,
+                user,
+                comments,
+                list_of_changed_files,
+                list_of_contributors = 0):
+        self.number = number
         self.user = user
+        self.comments = comments
         self.list_of_changed_files = list_of_changed_files
-        self.list_of_contributors = list_of_contributors
+        #self.list_of_contributors = list_of_contributors
+    
+    def __str__(self):
+        return 'The PR number is {} from user: {}'\
+            .format(self.number, self.user)
 
 class GitHubData:
     def __init__(self, repo):
         self.github = Github("015ca5700387a73a1696b9d46fb17cfac6c7e5d6")
         self.repo = self.github.get_repo(repo)
+        self.prData = []
+        self.biggest_contributor_with_prs = None
+        self.files = {}
+    
+    def calculate_biggest_contributor_with_prs(self):
+        pulls = self.repo.get_pulls()
+        prs = {}
+        for pull in pulls:
+            try:
+                prs[pull.user] = prs[pull.user] + 1
+            except:
+                prs[pull.user] = 1
+        return prs
+    
+    def create_contributors(self):
+        commits = self.repo.get_commits()
+        for commit in commits:
+            fileData = FileData(commit.commit, commit.author)
+            for file in commit.files:
+                if(self.files.get(file.filename) == None):
+                    self.files[file.filename] = [fileData]
+                else:
+                    self.files[file.filename] = \
+                        self.files[file.filename].append(fileData)
+    
+    def print_contributors(self):
+        for k in self.files:
+            print('file is {}'.format(k))
+            print('contet is {}'.format(self.files[k]))
+            #for elem in self.files[k]:
+            #    print('file data is {}'.format(elem))
     
     def print_users_with_comments(self, pr):
         unique_users = []
-        for issue in pr.get_issue_comments():
+        for issue in pr.get_issue_comments(base='master'):
             unique_users.append(issue.user.login)
     
         for name in set(unique_users):
@@ -25,50 +75,22 @@ class GitHubData:
     def print_open_pull_requests(self):
         pulls = self.repo.get_pulls(state='open', sort='created', base='master')
         for pr in pulls:
-            print(pr.number)
-            print("----")
-            print("This PR is from: {}".format(pr.user))
-            print("This PR has: {}".format(pr.comments))
-            print("This PR number of changed files is: ", pr.get_files().totalCount)
-            self.print_users_with_comments(pr)
-            print("*******")
-
-#    def __str__()
-#        "The PR number is {0}, the number of comments is: "
-
-# using username and password
-#g = Github("015ca5700387a73a1696b9d46fb17cfac6c7e5d6")
+            somePr = PRData(pr.number, pr.user, pr.comments, pr.get_files())
+            self.prData.append(somePr)
+        
+        for data in self.prData:
+            print(data)
 
 
+github = GitHubData("multiformats/py-multicodec")
+#github.print_open_pull_requests()
+#prs = github.calculate_biggest_contributor_with_prs()
+#for pr in prs:
+#    print(pr)
+#print(max(prs.items(), key=lambda x: x[1]))
+github.create_contributors()
+github.print_contributors()
 
-# Then play with your Github objects:
-#for repo in g.get_user().get_repos():
-#    print(repo.name)
-
-#repositories = g.search_repositories(query='language:python')
-#for repo in repositories:
-#    print(repo)
-
-#def print_changed_files(pr):
-#    for file in pr.get_files():
-#        print(file.filename)
-
-#def print_issue_comments(pr):
-#    for issue in pr.get_issue_comments():
-#        print(issue.body)
-
-#def print_users_with_comments(pr):
-#    unique_users = []
-#    for issue in pr.get_issue_comments():
-#        unique_users.append(issue.user.login)
-    
-#    for name in set(unique_users):
-#        print(name)
-
-#repo = g.get_repo("tensorflow/tensorflow")
-
-github = GitHubData("tensorflow/tensorflow")
-github.print_open_pull_requests()
 
 #
 #get_commits(sha=NotSet, path=NotSet, since=NotSet, until=NotSet, author=NotSet)

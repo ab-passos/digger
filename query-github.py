@@ -92,6 +92,9 @@ github.create_contributors()
 github.print_contributors()
 
 
+def test_answer():
+    assert True
+
 #
 #get_commits(sha=NotSet, path=NotSet, since=NotSet, until=NotSet, author=NotSet)
 #GET /repos/:owner/:repo/commits

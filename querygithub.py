@@ -3,13 +3,30 @@ from github import Github
 class FileData:
     def __init__(self,
                 commit, 
-                author):
+                author,
+                datetime):
         self.commit = commit
         self.author = author
+        self.datetime = datetime
     
     def __str__(self):
-        return 'Commit {} from user: {}'\
-            .format(self.commit, self.author)
+        return 'Commit {} from user: {} on date: {}'\
+            .format(self.commit, self.author, self.datetime)
+
+class FileChanges:
+    def __init__(self):
+        self.fileChanges = {}
+    
+    def add_change(self, filename, filedata):
+        self.fileChanges[filename] = filedata
+    
+    def __str__(self):
+        str = ''
+        for filechanges in self.fileChanges:
+            str += 'filename is : {} and file data is: {}'.format(filechanges, self.fileChanges[filechanges])
+        return str
+    
+
 
 class PRData:
     def __init__(self,
@@ -30,10 +47,10 @@ class PRData:
 
 class GitHubData:
     def __init__(self, repo):
-        self.github = Github("015ca5700387a73a1696b9d46fb17cfac6c7e5d6")
-        self.repo = self.github.get_repo(repo)
-        self.prData = []
-        self.biggest_contributor_with_prs = None
+        #self.github = Github("015ca5700387a73a1696b9d46fb17cfac6c7e5d6")
+        #self.repo = self.github.get_repo(repo)
+        #self.prData = []
+        #self.biggest_contributor_with_prs = None
         self.files = {}
     
     def calculate_biggest_contributor_with_prs(self):
@@ -47,15 +64,16 @@ class GitHubData:
         return prs
     
     def create_contributors(self):
-        commits = self.repo.get_commits()
-        for commit in commits:
-            fileData = FileData(commit.commit, commit.author)
-            for file in commit.files:
-                if(self.files.get(file.filename) == None):
-                    self.files[file.filename] = [fileData]
-                else:
-                    self.files[file.filename] = \
-                        self.files[file.filename].append(fileData)
+        return ''
+        #commits = self.repo.get_commits()
+        #for commit in commits:
+            #fileData = FileData(commit.commit, commit.author)
+            #for file in commit.files:
+            #    if(self.files.get(file.filename) == None):
+            #        self.files[file.filename] = [fileData]
+            #    else:
+            #        self.files[file.filename] = \
+            #            self.files[file.filename].append(fileData)
     
     def print_contributors(self):
         for k in self.files:
